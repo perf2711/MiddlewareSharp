@@ -4,7 +4,6 @@ using MiddlewareSharp.Interfaces;
 namespace MiddlewareSharp.Autofac
 {
     public class AutofacFlowDependencyBuilder<TContext> : IFlowDependencyBuilder<TContext>
-        where TContext : new()
     {
         public ContainerBuilder Builder { get; }
 

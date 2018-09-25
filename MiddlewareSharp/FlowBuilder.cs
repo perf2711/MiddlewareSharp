@@ -11,8 +11,20 @@ namespace MiddlewareSharp
     /// Class used to build middleware flow.
     /// </summary>
     /// <typeparam name="TContext">Context used in middlewares as they are invoked.</typeparam>
-	public class FlowBuilder<TContext> : IFlowBuilder<TContext>
-		where TContext : new()
+    public class FlowBuilder<TContext> : FlowBuilder<Flow<TContext>, TContext>, IFlowBuilder<TContext>
+    {
+        public FlowBuilder(IServiceProvider serviceProvider) : base(serviceProvider)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Class used to build middleware flow.
+    /// </summary>
+    /// <typeparam name="TFlow">Returned flow.</typeparam>
+    /// <typeparam name="TContext">Context used in middlewares as they are invoked.</typeparam>
+	public class FlowBuilder<TFlow, TContext> : IFlowBuilder<TFlow, TContext>
+        where TFlow : IFlow<TContext>
 	{
         /// <summary>
         /// Gets or sets the <see cref="IServiceProvider"/> for dependency injection.
@@ -35,8 +47,8 @@ namespace MiddlewareSharp
         /// Adds specified type to the middleware queue.
         /// </summary>
         /// <param name="middlewareType">Type of middleware to add. Must be assignable to <see cref="IMiddleware{TContext}"/></param>
-        /// <returns><see cref="IFlowBuilder{TContext}"/> instance for fluent api.</returns>
-		public IFlowBuilder<TContext> Use(Type middlewareType)
+        /// <returns><see cref="IFlowBuilder{TFlow, TContext}"/> instance for fluent api.</returns>
+		public IFlowBuilder<TFlow, TContext> Use(Type middlewareType)
 		{
 			if (!typeof(IMiddleware<TContext>).GetTypeInfo().IsAssignableFrom(middlewareType))
 			{
@@ -46,12 +58,12 @@ namespace MiddlewareSharp
 			return this;
 		}
 
-	    /// <summary>
-	    /// Adds specified type to the middleware queue.
-	    /// </summary>
-	    /// <typeparam name="TMiddleware">Type of middleware to add. Must be assignable to <see cref="IMiddleware{TContext}"/></typeparam>
-	    /// <returns><see cref="IFlowBuilder{TContext}"/> instance for fluent api.</returns>
-	    public IFlowBuilder<TContext> Use<TMiddleware>() where TMiddleware : IMiddleware<TContext>
+        /// <summary>
+        /// Adds specified type to the middleware queue.
+        /// </summary>
+        /// <typeparam name="TMiddleware">Type of middleware to add. Must be assignable to <see cref="IMiddleware{TContext}"/></typeparam>
+        /// <returns><see cref="IFlowBuilder{TFlow, TContext}"/> instance for fluent api.</returns>
+        public IFlowBuilder<TFlow, TContext> Use<TMiddleware>() where TMiddleware : IMiddleware<TContext>
 		{
 			return Use(typeof(TMiddleware));
 		}
@@ -60,10 +72,10 @@ namespace MiddlewareSharp
         /// Builds the middleware execution tree and creates an instance of <see cref="Flow{TContext}"/> for final usage.
         /// </summary>
         /// <returns><see cref="Flow{TContext}"/> instance.</returns>
-		public Flow<TContext> Build()
+		public TFlow Build()
 		{
 			var expression = GetMiddlewareTree(_middlewares.GetEnumerator());
-			return new Flow<TContext>(expression.Compile());
+            return (TFlow) Activator.CreateInstance(typeof(TFlow), expression.Compile());
 		}
 
 		private static Expression<MiddlewareDelegate<TContext>> GetMiddlewareTree(IEnumerator<Type> middlewareEnumerator)

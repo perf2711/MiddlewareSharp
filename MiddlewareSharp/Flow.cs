@@ -9,11 +9,10 @@ namespace MiddlewareSharp
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
     public sealed class Flow<TContext> : IFlow<TContext>
-        where TContext : new()
     {
         private readonly MiddlewareDelegate<TContext> _start;
 
-        internal Flow(MiddlewareDelegate<TContext> start)
+        public Flow(MiddlewareDelegate<TContext> start)
         {
             _start = start;
         }

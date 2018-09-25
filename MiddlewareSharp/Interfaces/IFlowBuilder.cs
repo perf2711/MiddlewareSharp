@@ -2,13 +2,18 @@
 
 namespace MiddlewareSharp.Interfaces
 {
-    public interface IFlowBuilder<TContext>
-        where TContext : new ()
+    public interface IFlowBuilder<TContext> : IFlowBuilder<Flow<TContext>, TContext>
+    {
+
+    }
+
+    public interface IFlowBuilder<TFlow, TContext>
+        where TFlow : IFlow<TContext>
     {
         IServiceProvider ServiceProvider { get; set; }
 
-        IFlowBuilder<TContext> Use(Type middlewareType);
-        IFlowBuilder<TContext> Use<TMiddleware>() where TMiddleware : IMiddleware<TContext>;
-        Flow<TContext> Build();
+        IFlowBuilder<TFlow, TContext> Use(Type middlewareType);
+        IFlowBuilder<TFlow, TContext> Use<TMiddleware>() where TMiddleware : IMiddleware<TContext>;
+        TFlow Build();
     }
 }
