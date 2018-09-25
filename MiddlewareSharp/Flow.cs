@@ -8,7 +8,7 @@ namespace MiddlewareSharp
     /// Flow built by <see cref="IFlowBuilder{TContext}"/>
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public sealed class Flow<TContext>
+    public sealed class Flow<TContext> : IFlow<TContext>
         where TContext : new()
     {
         private readonly MiddlewareDelegate<TContext> _start;
