@@ -20,7 +20,17 @@ namespace MiddlewareSharp.Tests
             return middleware;
         }
 
-        public override void Release(IMiddleware<TestContext> middleware)
+		public override ICatchMiddleware<TestContext> CreateCatch(Type middlewareType)
+		{
+			var middleware = base.CreateCatch(middlewareType);
+			if (middleware is ITestMiddleware test)
+			{
+				test.IsCreated = true;
+			}
+			return middleware;
+		}
+
+		public override void Release(IMiddleware<TestContext> middleware)
         {
             if (middleware is ITestMiddleware test)
             {

@@ -29,5 +29,11 @@ namespace MiddlewareSharp.Autofac
             Builder.RegisterType<TMiddleware>().InstancePerLifetimeScope();
             return this;
         }
-    }
+
+		public IFlowDependencyBuilder<TContext> WithCatchMiddleware<TMiddleware>() where TMiddleware : class, ICatchMiddleware<TContext>
+		{
+			Builder.RegisterType<TMiddleware>().InstancePerLifetimeScope();
+			return this;
+		}
+	}
 }

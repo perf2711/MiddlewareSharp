@@ -1,4 +1,6 @@
-﻿namespace MiddlewareSharp.Interfaces
+﻿using System;
+
+namespace MiddlewareSharp.Interfaces
 {
     public interface IFlowDependencyBuilder<TContext>
     {
@@ -21,5 +23,12 @@
         /// <typeparam name="TMiddleware">Middleware type.</typeparam>
         /// <returns><see cref="IFlowDependencyBuilder{TContext}"/> for further configuration.</returns>
         IFlowDependencyBuilder<TContext> WithMiddleware<TMiddleware>() where TMiddleware : class, IMiddleware<TContext>;
-    }
+
+		/// <summary>
+		/// Adds scoped middleware.
+		/// </summary>
+		/// <typeparam name="TMiddleware">Middleware type.</typeparam>
+		/// <returns><see cref="IFlowDependencyBuilder{TContext}"/> for further configuration.</returns>
+		IFlowDependencyBuilder<TContext> WithCatchMiddleware<TMiddleware>() where TMiddleware : class, ICatchMiddleware<TContext>;
+	}
 }

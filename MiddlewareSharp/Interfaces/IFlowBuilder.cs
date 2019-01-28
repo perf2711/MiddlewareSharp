@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 
 namespace MiddlewareSharp.Interfaces
 {
@@ -14,6 +15,8 @@ namespace MiddlewareSharp.Interfaces
 
         IFlowBuilder<TFlow, TContext> Use(Type middlewareType);
         IFlowBuilder<TFlow, TContext> Use<TMiddleware>() where TMiddleware : IMiddleware<TContext>;
-        TFlow Build();
+		IFlowBuilder<TFlow, TContext> UseCatch(Type middlewareType);
+		IFlowBuilder<TFlow, TContext> UseCatch<TMiddleware>() where TMiddleware : ICatchMiddleware<TContext>;
+		TFlow Build();
     }
 }

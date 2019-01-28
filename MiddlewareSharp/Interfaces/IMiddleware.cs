@@ -7,7 +7,7 @@ namespace MiddlewareSharp.Interfaces
     /// </summary>
     /// <typeparam name="TContext">Context used by middlewares.</typeparam>
     public interface IMiddleware<TContext>
-    {
+	{
         /// <summary>
         /// Invokes the middleware.
         /// </summary>

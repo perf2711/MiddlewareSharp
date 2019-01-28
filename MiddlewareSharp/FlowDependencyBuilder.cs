@@ -29,5 +29,11 @@ namespace MiddlewareSharp
             Collection.AddScoped<TMiddleware>();
             return this;
         }
-    }
+
+		public IFlowDependencyBuilder<TContext> WithCatchMiddleware<TMiddleware>() where TMiddleware : class, ICatchMiddleware<TContext>
+		{
+			Collection.AddScoped<TMiddleware>();
+			return this;
+		}
+	}
 }

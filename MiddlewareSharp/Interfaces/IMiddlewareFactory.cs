@@ -15,10 +15,17 @@ namespace MiddlewareSharp.Interfaces
         /// <returns>Instantiated middleware.</returns>
         IMiddleware<TContext> Create(Type middlewareType);
 
-        /// <summary>
-        /// Releases an instance of <see cref="IMiddleware{TContext}"/>
-        /// </summary>
-        /// <param name="middleware">Middleware to dispose.</param>
-        void Release(IMiddleware<TContext> middleware);
-    }
+		/// <summary>
+		/// Creates an instance of <see cref="ICatchMiddleware{TContext}"/>.
+		/// </summary>
+		/// <param name="middlewareType">Type of middleware to instantiate.</param>
+		/// <returns>Instantiated middleware.</returns>
+		ICatchMiddleware<TContext> CreateCatch(Type middlewareType);
+
+		/// <summary>
+		/// Releases an instance of <see cref="IMiddleware{TContext}"/>
+		/// </summary>
+		/// <param name="middleware">Middleware to dispose.</param>
+		void Release(IMiddleware<TContext> middleware);
+	}
 }

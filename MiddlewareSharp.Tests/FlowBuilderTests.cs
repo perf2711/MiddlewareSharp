@@ -1,157 +1,267 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using MiddlewareSharp.Autofac;
 using MiddlewareSharp.Interfaces;
 using MiddlewareSharp.Tests.Middlewares;
-using Xunit;
-using Xunit.Abstractions;
+using NUnit.Framework;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MiddlewareSharp.Tests
 {
-    public class FlowBuilderTests
-    {
-        private IServiceProvider ServiceProvider { get; set; }
+	[TestFixture]
+	public class FlowBuilderTests
+	{
+		private IServiceProvider ServiceProvider { get; set; }
 
-        public FlowBuilderTests(ITestOutputHelper output)
-        {
-            Trace.Listeners.Add(new TestTraceListener(output));
-        }
+		[Test]
+		public async Task IncrementThenMultiplyMiddlewareTest()
+		{
+			ServiceProvider = SetupServices();
 
-        [Fact]
-        public async Task IncrementThenMultiplyMiddlewareTest()
-        {
-            ServiceProvider = SetupServices();
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
 
-            var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
-            flowBuilder.Use<IncrementByOneMiddleware>();
-            flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
+			var flow = flowBuilder.Build();
 
-            var flow = flowBuilder.Build();
+			var context = await flow.InvokeAsync(ServiceProvider);
+			Assert.AreEqual((0 + 1) * 5, context.N);
 
-            var context = await flow.InvokeAsync(ServiceProvider);
-            Assert.Equal((0 + 1) * 5, context.N);
-
-            VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
-            VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
-        }
+			VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
+			VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
+		}
 
 
-        [Fact]
-        public async Task MultiplyThenIncrementMiddlewareTest()
-        {
-            ServiceProvider = SetupServices();
+		[Test]
+		public async Task MultiplyThenIncrementMiddlewareTest()
+		{
+			ServiceProvider = SetupServices();
 
-            var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
-            flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
-            flowBuilder.Use<IncrementByOneMiddleware>();
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
+			flowBuilder.Use<IncrementByOneMiddleware>();
 
-            var flow = flowBuilder.Build();
+			var flow = flowBuilder.Build();
 
-            var context = new TestContext {N = 5};
-            await flow.InvokeAsync(context, ServiceProvider);
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
 
-            Assert.Equal(5 * 5 + 1, context.N);
+			Assert.AreEqual(5 * 5 + 1, context.N);
 
-            VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
-            VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
-        }
+			VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
+			VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(IncrementByOneMiddleware));
+		}
 
-        [Fact]
-        public async Task StoppingMiddlewareTest()
-        {
-            ServiceProvider = SetupServices();
+		[Test]
+		public async Task StoppingMiddlewareTest()
+		{
+			ServiceProvider = SetupServices();
 
-            var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
-            flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
-            flowBuilder.Use<StopMiddleware>();
-            flowBuilder.Use<IncrementByOneMiddleware>();
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
+			flowBuilder.Use<StopMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
 
-            var flow = flowBuilder.Build();
+			var flow = flowBuilder.Build();
 
-            var context = new TestContext {N = 5};
-            await flow.InvokeAsync(context, ServiceProvider);
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
 
-            Assert.Equal(5 * 5, context.N);
+			Assert.AreEqual(5 * 5, context.N);
 
-            VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(StopMiddleware));
-            VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(StopMiddleware));
+			VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(StopMiddleware));
+			VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(StopMiddleware));
 
-            VerifyCreated(false, typeof(IncrementByOneMiddleware));
-            VerifyReleased(false, typeof(IncrementByOneMiddleware));
-        }
+			VerifyCreated(false, typeof(IncrementByOneMiddleware));
+			VerifyReleased(false, typeof(IncrementByOneMiddleware));
+		}
 
-        [Fact]
-        public async Task ThrowingMiddlewareTest()
-        {
-            ServiceProvider = SetupServices();
+		[Test]
+		public void ThrowingMiddlewareTest()
+		{
+			ServiceProvider = SetupServices();
 
-            var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
-            flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
-            flowBuilder.Use<ThrowingMiddleware>();
-            flowBuilder.Use<IncrementByOneMiddleware>();
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
 
-            var flow = flowBuilder.Build();
+			var flow = flowBuilder.Build();
 
-            var context = new TestContext {N = 5};
-            var exception = await Assert.ThrowsAsync<MiddlewareException<TestContext>>(() => flow.InvokeAsync(context, ServiceProvider));
+			var context = new TestContext { N = 5 };
+			var exception = Assert.ThrowsAsync<MiddlewareException<TestContext>>(() => flow.InvokeAsync(context, ServiceProvider));
 
-            Assert.Equal(ServiceProvider.GetService(typeof(ThrowingMiddleware)), exception.Middleware);
-            Assert.Same(context, exception.Context);
-            Assert.Equal(5 * 5, context.N);
+			Assert.AreEqual(ServiceProvider.GetService(typeof(ThrowingMiddleware)), exception.Middleware);
+			Assert.AreSame(context, exception.Context);
+			Assert.AreEqual(5 * 5, context.N);
 
-            VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(ThrowingMiddleware));
-            VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(ThrowingMiddleware));
+			VerifyCreated(true, typeof(MultiplyByFiveMiddleware), typeof(ThrowingMiddleware));
+			VerifyReleased(true, typeof(MultiplyByFiveMiddleware), typeof(ThrowingMiddleware));
 
-            VerifyCreated(false, typeof(IncrementByOneMiddleware));
-            VerifyReleased(false, typeof(IncrementByOneMiddleware));
-        }
+			VerifyCreated(false, typeof(IncrementByOneMiddleware));
+			VerifyReleased(false, typeof(IncrementByOneMiddleware));
+		}
 
-        [Fact]
-        public void InvalidMiddlewareUseTest()
-        {
-            ServiceProvider = SetupServices();
+		[Test]
+		public async Task CatchingMiddleware_WhenMiddlewareThrows_FlowDoesntThrow()
+		{
+			ServiceProvider = SetupServices();
 
-            var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
-            Assert.Throws<ArgumentException>(() => flowBuilder.Use(typeof(int)));
-        }
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
 
-        private static IServiceProvider SetupServices()
-        {
-            var builder = new ContainerBuilder();
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
+		}
 
-            builder.RegisterFlowBuilder<TestContext>()
-                .WithMiddlewareFactory<TestMiddlewareFactory>()
-                .WithMiddleware<IncrementByOneMiddleware>()
-                .WithMiddleware<MultiplyByFiveMiddleware>()
-                .WithMiddleware<StopMiddleware>()
-                .WithMiddleware<ThrowingMiddleware>();
+		[Test]
+		public async Task CatchingMiddleware_WhenMiddlewareThrows_FlowContinues()
+		{
+			ServiceProvider = SetupServices();
 
-            builder.RegisterType<TestMiddlewareFactory>().As<IMiddlewareFactory<TestContext>>();
-            builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
 
-            return new AutofacServiceProvider(builder.Build());
-        }
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
 
-        private void VerifyCreated(bool created, params Type[] middlewares)
-        {
-            Assert.True(middlewares
-                .Select(m => ServiceProvider.GetService(m) as ITestMiddleware)
-                .Where(m => m != null)
-                .All(m => m.IsCreated == created),
-                $"One of {string.Join(", ", middlewares.Select(m => m.Name))} has {nameof(ITestMiddleware.IsCreated)} set to {!created}");
-        }
+			Assert.AreEqual(5 * 5 + 1, context.N);
+		}
 
-        private void VerifyReleased(bool released, params Type[] middlewares)
-        {
-            Assert.True(middlewares
-                .Select(m => ServiceProvider.GetService(m) as ITestMiddleware)
-                .Where(m => m != null)
-                .All(m => m.IsReleased == released),
-                $"One of {string.Join(", ", middlewares.Select(m => m.Name))} has {nameof(ITestMiddleware.IsReleased)} set to {!released}");
-        }
-    }
+		[Test]
+		public async Task CatchingMiddleware_WhenMiddlewareThrows_FlowSkipsToCatch()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
+
+			Assert.AreEqual(5 * 5 + 1, context.N);
+		}
+
+		[Test]
+		public async Task CatchingMiddleware_WhenMiddlewareDoesntThrow_CatchIsNotExecuted()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
+
+			Assert.IsNull(context.CatchedException);
+		}
+
+		[Test]
+		public async Task CatchingMiddleware_WhenMiddlewareThrows_CatchIsExecutedOnlyOnce()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
+
+			Assert.AreEqual(5, context.CatchN);
+		}
+
+		[Test]
+		public async Task CatchingMiddleware_WhenTwoCatchesAreUsed_ClosestOneIsExecuted()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use<ThrowingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.UseCatch<CatchingMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 5 };
+			await flow.InvokeAsync(context, ServiceProvider);
+
+			Assert.AreEqual(6 + 7, context.CatchN);
+		}
+
+
+		[Test]
+		public void InvalidMiddlewareUseTest()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			Assert.Throws<ArgumentException>(() => flowBuilder.Use(typeof(int)));
+		}
+
+		private static IServiceProvider SetupServices()
+		{
+			var builder = new ContainerBuilder();
+
+			builder.RegisterFlowBuilder<TestContext>()
+				.WithMiddlewareFactory<TestMiddlewareFactory>()
+				.WithMiddleware<IncrementByOneMiddleware>()
+				.WithMiddleware<MultiplyByFiveMiddleware>()
+				.WithMiddleware<StopMiddleware>()
+				.WithMiddleware<ThrowingMiddleware>()
+				.WithCatchMiddleware<CatchingMiddleware>();
+
+
+			builder.RegisterType<TestMiddlewareFactory>().As<IMiddlewareFactory<TestContext>>();
+			builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
+
+			return new AutofacServiceProvider(builder.Build());
+		}
+
+		private void VerifyCreated(bool created, params Type[] middlewares)
+		{
+			Assert.True(middlewares
+				.Select(m => ServiceProvider.GetService(m) as ITestMiddleware)
+				.Where(m => m != null)
+				.All(m => m.IsCreated == created),
+				$"One of {string.Join(", ", middlewares.Select(m => m.Name))} has {nameof(ITestMiddleware.IsCreated)} set to {!created}");
+		}
+
+		private void VerifyReleased(bool released, params Type[] middlewares)
+		{
+			Assert.True(middlewares
+				.Select(m => ServiceProvider.GetService(m) as ITestMiddleware)
+				.Where(m => m != null)
+				.All(m => m.IsReleased == released),
+				$"One of {string.Join(", ", middlewares.Select(m => m.Name))} has {nameof(ITestMiddleware.IsReleased)} set to {!released}");
+		}
+	}
 }

@@ -28,8 +28,14 @@ namespace MiddlewareSharp
             return _serviceProvider.GetRequiredService(middlewareType) as IMiddleware<TContext>;
         }
 
-        /// <inheritdoc />
-        public virtual void Release(IMiddleware<TContext> middleware)
+		/// <inheritdoc />
+		public virtual ICatchMiddleware<TContext> CreateCatch(Type middlewareType)
+		{
+			return _serviceProvider.GetRequiredService(middlewareType) as ICatchMiddleware<TContext>;
+		}
+
+		/// <inheritdoc />
+		public virtual void Release(IMiddleware<TContext> middleware)
         {
         }
     }
