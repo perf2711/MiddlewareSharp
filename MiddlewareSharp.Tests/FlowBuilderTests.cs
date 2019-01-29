@@ -4,9 +4,12 @@ using MiddlewareSharp.Autofac;
 using MiddlewareSharp.Interfaces;
 using MiddlewareSharp.Tests.Middlewares;
 using NUnit.Framework;
+using Polly;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MiddlewareSharp.Polly.Autofac;
+using MiddlewareSharp.Polly;
 
 namespace MiddlewareSharp.Tests
 {
@@ -227,6 +230,36 @@ namespace MiddlewareSharp.Tests
 			Assert.Throws<ArgumentException>(() => flowBuilder.Use(typeof(int)));
 		}
 
+		[Test]
+		public async Task Flow_WhenRetryPolicyIsProvided_ShouldSucceedAfterRetrying()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.UseWithPolicy<TestContext, SucceedAtFiveMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 1 };
+			await flow.InvokeAsync(context, ServiceProvider);
+
+			Assert.AreEqual(5 * 5, context.N);
+		}
+
+		[Test]
+		public void Flow_WhenRetryPolicyIsProvided_ShouldFailAfterTooManyRetries()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			flowBuilder.UseWithPolicy<TestContext, SucceedAtFiveMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = -2 };
+			Assert.ThrowsAsync<MiddlewareException<TestContext>>(() => flow.InvokeAsync(context, ServiceProvider));
+		}
+
 		private static IServiceProvider SetupServices()
 		{
 			var builder = new ContainerBuilder();
@@ -237,8 +270,10 @@ namespace MiddlewareSharp.Tests
 				.WithMiddleware<MultiplyByFiveMiddleware>()
 				.WithMiddleware<StopMiddleware>()
 				.WithMiddleware<ThrowingMiddleware>()
+				.WithMiddleware<SucceedAtFiveMiddleware>()
 				.WithCatchMiddleware<CatchingMiddleware>();
 
+			builder.RegisterMiddleware<TestContext, SucceedAtFiveMiddleware>(Policy.Handle<TestException>().RetryAsync(5));
 
 			builder.RegisterType<TestMiddlewareFactory>().As<IMiddlewareFactory<TestContext>>();
 			builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();

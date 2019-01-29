@@ -1,18 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <Version>0.1.4</Version>
-    <PackageReleaseNotes>Added catch middlewares.</PackageReleaseNotes>
+    <Authors>Sebastian Alex</Authors>
+    <Description>Support for Polly middlewares.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <AssemblyVersion>0.1.4.0</AssemblyVersion>
-    <FileVersion>0.1.4.0</FileVersion>
     <RepositoryUrl>https://github.com/perf2711/MiddlewareSharp</RepositoryUrl>
     <PackageProjectUrl>https://github.com/perf2711/MiddlewareSharp</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.6.2" />
+    <PackageReference Include="Polly" Version="6.1.2" />
   </ItemGroup>
 
   <ItemGroup>
