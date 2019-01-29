@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>0.1.4</Version>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Sebastian Alex</Authors>
+    <Version>0.1.4</Version>
     <Description>Autofac extensions for support for Polly middlewares.</Description>
     <PackageProjectUrl>https://github.com/perf2711/MiddlewareSharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/perf2711/MiddlewareSharp</RepositoryUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseUrl>https://github.com/perf2711/MiddlewareSharp/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MiddlewareSharp.Autofac\MiddlewareSharp.Autofac.csproj" />
     <ProjectReference Include="..\MiddlewareSharp.Polly\MiddlewareSharp.Polly.csproj" />
+    <ProjectReference Include="..\MiddlewareSharp\MiddlewareSharp.csproj" />
   </ItemGroup>
 
 </Project>

@@ -23,7 +23,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
 			flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
 
@@ -42,7 +42,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
 			flowBuilder.Use<IncrementByOneMiddleware>();
 
@@ -62,7 +62,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use(typeof(MultiplyByFiveMiddleware));
 			flowBuilder.Use<StopMiddleware>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
@@ -86,7 +86,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 			flowBuilder.Use<ThrowingMiddleware>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
@@ -112,7 +112,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 			flowBuilder.Use<ThrowingMiddleware>();
 			flowBuilder.UseCatch<CatchingMiddleware>();
@@ -128,7 +128,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 			flowBuilder.Use<ThrowingMiddleware>();
 			flowBuilder.UseCatch<CatchingMiddleware>();
@@ -146,7 +146,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 			flowBuilder.Use<ThrowingMiddleware>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
@@ -167,7 +167,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 			flowBuilder.UseCatch<CatchingMiddleware>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
@@ -184,7 +184,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<ThrowingMiddleware>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
 			flowBuilder.Use<ThrowingMiddleware>();
@@ -202,7 +202,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
 			flowBuilder.Use<ThrowingMiddleware>();
 			flowBuilder.Use<IncrementByOneMiddleware>();
@@ -226,7 +226,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			Assert.Throws<ArgumentException>(() => flowBuilder.Use(typeof(int)));
 		}
 
@@ -235,7 +235,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.UseWithPolicy<TestContext, SucceedAtFiveMiddleware>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 
@@ -251,7 +251,7 @@ namespace MiddlewareSharp.Tests
 		{
 			ServiceProvider = SetupServices();
 
-			var flowBuilder = new FlowBuilder<TestContext>(ServiceProvider);
+			var flowBuilder = new FlowBuilder<TestContext>();
 			flowBuilder.UseWithPolicy<TestContext, SucceedAtFiveMiddleware>();
 			flowBuilder.Use<MultiplyByFiveMiddleware>();
 

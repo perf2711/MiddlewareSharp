@@ -15,9 +15,6 @@ namespace MiddlewareSharp
 	/// <typeparam name="TContext">Context used in middlewares as they are invoked.</typeparam>
 	public class FlowBuilder<TContext> : FlowBuilder<Flow<TContext>, TContext>, IFlowBuilder<TContext>
 	{
-		public FlowBuilder(IServiceProvider serviceProvider) : base(serviceProvider)
-		{
-		}
 	}
 
 	/// <summary>
@@ -28,22 +25,7 @@ namespace MiddlewareSharp
 	public class FlowBuilder<TFlow, TContext> : IFlowBuilder<TFlow, TContext>
 		where TFlow : IFlow<TContext>
 	{
-		/// <summary>
-		/// Gets or sets the <see cref="IServiceProvider"/> for dependency injection.
-		/// </summary>
-		public IServiceProvider ServiceProvider { get; set; }
-
-		private readonly ICollection<Type> _middlewares;
-
-		/// <summary>
-		/// Creates an instance of flow builder with provided <see cref="IServiceProvider"/> for dependency injection.
-		/// </summary>
-		/// <param name="serviceProvider"><see cref="IServiceProvider"/> for dependency injection.</param>
-		public FlowBuilder(IServiceProvider serviceProvider)
-		{
-			_middlewares = new List<Type>();
-			ServiceProvider = serviceProvider;
-		}
+		private readonly ICollection<Type> _middlewares = new List<Type>();
 
 		/// <summary>
 		/// Adds specified type to the middleware queue.

@@ -9,6 +9,7 @@
     <FileVersion>0.1.4.0</FileVersion>
     <RepositoryUrl>https://github.com/perf2711/MiddlewareSharp</RepositoryUrl>
     <PackageProjectUrl>https://github.com/perf2711/MiddlewareSharp</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/perf2711/MiddlewareSharp/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
