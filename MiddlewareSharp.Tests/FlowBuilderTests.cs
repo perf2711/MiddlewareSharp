@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MiddlewareSharp.Polly.Autofac;
 using MiddlewareSharp.Polly;
+using System.Diagnostics;
 
 namespace MiddlewareSharp.Tests
 {
@@ -258,6 +259,32 @@ namespace MiddlewareSharp.Tests
 			var flow = flowBuilder.Build();
 			var context = new TestContext { N = -2 };
 			Assert.ThrowsAsync<MiddlewareException<TestContext>>(() => flow.InvokeAsync(context, ServiceProvider));
+		}
+
+		[Test]
+		public async Task PerformanceTest()
+		{
+			ServiceProvider = SetupServices();
+
+			var flowBuilder = new FlowBuilder<TestContext>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+			flowBuilder.Use<IncrementByOneMiddleware>();
+			flowBuilder.Use<MultiplyByFiveMiddleware>();
+
+			var flow = flowBuilder.Build();
+			var context = new TestContext { N = 0 };
+
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
+			for (var i=0; i<10000; i++)
+			{
+				await flow.InvokeAsync(context, ServiceProvider);
+			}
+			stopwatch.Stop();
+			Assert.Pass($"Total: {stopwatch.ElapsedMilliseconds}, avg: {stopwatch.ElapsedMilliseconds/10000d}");
 		}
 
 		private static IServiceProvider SetupServices()

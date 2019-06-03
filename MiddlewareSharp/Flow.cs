@@ -39,6 +39,12 @@ namespace MiddlewareSharp
         public async Task<TContext> InvokeAsync(TContext context, IServiceProvider serviceProvider)
         {
             var factory = serviceProvider.GetService(typeof(IMiddlewareFactory<TContext>)) as IMiddlewareFactory<TContext>;
+            if (factory == null)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to resolve {typeof(IMiddlewareFactory<TContext>)}. Verify that the factory is registered in your IoC container.");
+            }
+
             await _start.Invoke(context, factory);
             return context;
         }
